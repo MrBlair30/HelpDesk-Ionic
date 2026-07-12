@@ -35,3 +35,69 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* =========================================================================
+ * HELPDESK WOW PREMIUM DESIGN SYSTEM & UTILITY STYLES
+ * ========================================================================= */
+* {
+  font-family: var(--ion-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.75) !important;
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 16px !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease !important;
+}
+
+.glass-card:active {
+  transform: scale(0.985);
+}
+
+.code-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(14, 165, 233, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.badge-priority {
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.badge-status {
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}
+
+ion-toolbar.header-toolbar {
+  --background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  --border-color: rgba(255, 255, 255, 0.08);
+}
+
+.custom-fab {
+  --box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.5);
+  transition: transform 0.2s ease;
+}
+
+.custom-fab:active {
+  transform: rotate(90deg) scale(0.9);
+}

@@ -6,7 +6,7 @@ import { SEED_INCIDENTS } from './seed-data';
 import { Incident } from '../models/incident.model';
 
 @Injectable({
-  provided: 'root'
+  providedIn: 'root'
 })
 export class SqliteService {
   private sqlite: SQLiteConnection;

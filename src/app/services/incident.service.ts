@@ -3,7 +3,7 @@ import { SqliteService } from '../database/sqlite.service';
 import { Incident, CreateIncidentDto, UpdateIncidentDto, IncidentCategory, IncidentPriority, IncidentStatus } from '../models/incident.model';
 
 @Injectable({
-  provided: 'root'
+  providedIn: 'root'
 })
 export class IncidentService {
   private sqlite = inject(SqliteService);
