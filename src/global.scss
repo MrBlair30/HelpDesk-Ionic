@@ -1,103 +1,141 @@
 /*
  * App Global CSS
  * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
  */
-
-/* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
-
-/* Optional CSS utils that can be commented out */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
-
 /* =========================================================================
- * HELPDESK WOW PREMIUM DESIGN SYSTEM & UTILITY STYLES
+ * HELPDESK INCIDENCIAS TECNOLÓGICAS - CLEAN LIGHT THEME SYSTEM
  * ========================================================================= */
 * {
   font-family: var(--ion-font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
 }
 
-.glass-card {
-  background: rgba(30, 41, 59, 0.75) !important;
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3) !important;
-  border-radius: 16px !important;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease !important;
+body {
+  background-color: #f4f6f9 !important;
+  color: #333333 !important;
 }
 
-.glass-card:active {
-  transform: scale(0.985);
+ion-content {
+  --background: #f4f6f9 !important;
+  --color: #333333 !important;
 }
 
-.code-pill {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 600;
+ion-toolbar.navbar-toolbar {
+  --background: #2c3e50 !important;
+  --color: #ffffff !important;
+  --min-height: 64px;
+}
+
+.navbar-title {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  text-align: center;
+  letter-spacing: -0.3px;
+}
+
+.white-card {
+  background: #ffffff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
+  padding: 20px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.white-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Priority top borders matching the screenshot exactly */
+.border-critica, .border-alta {
+  border-top: 4px solid #e74c3c !important;
+}
+.border-media {
+  border-top: 4px solid #f39c12 !important;
+}
+.border-baja {
+  border-top: 4px solid #2ecc71 !important;
+}
+
+/* Priority Badge pill */
+.pill-priority {
   font-size: 0.75rem;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: rgba(14, 165, 233, 0.15);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  letter-spacing: 0.5px;
-}
-
-.badge-priority {
   font-weight: 600;
-  border-radius: 9999px;
-  padding: 4px 10px;
-  font-size: 0.72rem;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 12px;
+  color: #ffffff !important;
+  display: inline-block;
 }
+.bg-critica, .bg-alta { background-color: #e74c3c !important; }
+.bg-media { background-color: #f39c12 !important; }
+.bg-baja { background-color: #2ecc71 !important; }
 
-.badge-status {
+/* Outlined Detail Button */
+.btn-outline-blue {
+  width: 100%;
+  padding: 8px 0;
+  border: 1px solid #3498db;
+  border-radius: 4px;
+  color: #3498db;
+  background: transparent;
   font-weight: 600;
-  border-radius: 8px;
-  padding: 4px 10px;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 14px;
+  transition: all 0.2s;
+  display: block;
+  text-decoration: none;
 }
 
-ion-toolbar.header-toolbar {
-  --background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(12px);
-  --border-color: rgba(255, 255, 255, 0.08);
+.btn-outline-blue:hover {
+  background: #3498db;
+  color: #ffffff !important;
 }
 
-.custom-fab {
-  --box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.5);
-  transition: transform 0.2s ease;
+/* Form Inputs */
+.clean-input, .clean-textarea, .clean-select {
+  width: 100%;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  background: #ffffff;
+  color: #333333;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
-.custom-fab:active {
-  transform: rotate(90deg) scale(0.9);
+.clean-input:focus, .clean-textarea:focus, .clean-select:focus {
+  border-color: #3498db;
+}
+
+.clean-btn-blue {
+  width: 100%;
+  padding: 12px;
+  background: #3498db;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.clean-btn-blue:hover {
+  background: #2980b9;
 }

@@ -19,19 +19,19 @@ import {
   selector: 'app-incident-form-modal',
   template: `
     <ion-header class="ion-no-border">
-      <ion-toolbar class="header-toolbar">
-        <ion-title style="font-weight: 700; color: #f8fafc;">
+      <ion-toolbar class="header-toolbar" style="--background: #2c3e50; color: white;">
+        <ion-title style="font-weight: 700; color: #ffffff;">
           {{ incident ? 'Editar Incidencia' : 'Nueva Incidencia' }}
         </ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="close()" color="medium">
+          <ion-button (click)="close()" style="color: white;">
             <ion-icon slot="icon-only" name="close"></ion-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="ion-padding" style="--background: #0b1120;">
+    <ion-content class="ion-padding" style="--background: #f4f6f9;">
       <form [formGroup]="form" (ngSubmit)="save()" class="form-container">
         <!-- Título -->
         <div class="field-group">
@@ -146,15 +146,16 @@ import {
     .field-label {
       font-size: 0.85rem;
       font-weight: 600;
-      color: #94a3b8;
+      color: #4a5568;
       margin-left: 4px;
     }
     .input-item {
-      --background: #1e293b;
-      --border-radius: 12px;
+      --background: #ffffff;
+      --border-radius: 6px;
       --padding-start: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      color: #2d3748;
     }
     .textarea-item {
       --padding-top: 10px;

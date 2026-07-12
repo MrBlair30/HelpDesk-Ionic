@@ -2,293 +2,267 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { 
-  IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonContent, 
-  IonBadge, IonCard, IonCardHeader, IonCardTitle, IonCardContent, ModalController, AlertController 
+  IonHeader, IonToolbar, IonContent, IonButtons, IonButton, IonIcon, 
+  ModalController, AlertController 
 } from '@ionic/angular/standalone';
 import { IncidentService } from '../../services/incident.service';
 import { IncidentFormModalComponent } from '../../components/incident-form-modal/incident-form-modal.component';
-import { Incident, INCIDENT_STATUSES, IncidentStatus, PRIORITY_CONFIG, STATUS_CONFIG } from '../../models/incident.model';
+import { Incident, INCIDENT_STATUSES, IncidentStatus } from '../../models/incident.model';
 
 @Component({
   selector: 'app-incident-detail',
   template: `
     <ion-header class="ion-no-border">
-      <ion-toolbar class="header-toolbar">
-        <ion-buttons slot="start">
-          <ion-button (click)="goBack()" color="primary">
-            <ion-icon slot="start" name="arrow-back"></ion-icon>
-            Volver
-          </ion-button>
-        </ion-buttons>
+      <ion-toolbar class="navbar-toolbar">
+        <div class="header-content">
+          <ion-buttons slot="start">
+            <ion-button (click)="goBack()" style="color: white; font-weight: 600;">
+              <ion-icon slot="start" name="arrow-back"></ion-icon>
+              Volver al listado
+            </ion-button>
+          </ion-buttons>
 
-        <ion-title style="font-weight: 700; color: #f8fafc;">
-          {{ incident()?.codigo || 'Detalle' }}
-        </ion-title>
+          <h1 class="navbar-title">{{ incident()?.codigo || 'Detalle de Incidencia' }}</h1>
 
-        <ion-buttons slot="end" *ngIf="incident()">
-          <ion-button (click)="openEditModal()" color="primary" title="Editar">
-            <ion-icon slot="icon-only" name="create"></ion-icon>
-          </ion-button>
-          <ion-button (click)="confirmDelete()" color="danger" title="Eliminar">
-            <ion-icon slot="icon-only" name="trash"></ion-icon>
-          </ion-button>
-        </ion-buttons>
+          <ion-buttons slot="end" *ngIf="incident()">
+            <ion-button (click)="openEditModal()" style="color: white;" title="Editar">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-button>
+            <ion-button (click)="confirmDelete()" style="color: #e74c3c;" title="Eliminar">
+              <ion-icon slot="icon-only" name="trash"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </div>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="ion-padding main-content" *ngIf="incident() as item">
+    <ion-content *ngIf="incident() as item">
       <div class="detail-container">
-        <!-- TOP STATUS & PRIORITY HERO -->
-        <div class="hero-card glass-card">
-          <div class="hero-top">
-            <span class="code-pill large-pill">{{ item.codigo }}</span>
-            <div class="hero-badges">
-              <span class="badge-priority" [style.background]="getPriorityBg(item.prioridad)" [style.color]="getPriorityTextColor(item.prioridad)">
-                {{ item.prioridad }}
-              </span>
-              <span class="badge-status" [style.background]="getStatusBg(item.estado)" [style.color]="getStatusTextColor(item.estado)">
-                <ion-icon [name]="getStatusIcon(item.estado)" style="vertical-align: -2px; margin-right: 4px;"></ion-icon>
-                {{ item.estado }}
-              </span>
-            </div>
+        <!-- TOP CARD -->
+        <div class="white-card detail-main-card" [ngClass]="getBorderClass(item.prioridad)">
+          <div class="top-meta">
+            <span class="code-badge">{{ item.codigo }}</span>
+            <span class="pill-priority" [ngClass]="getBgClass(item.prioridad)">
+              Prioridad: {{ item.prioridad }}
+            </span>
           </div>
 
-          <h1 class="item-title">{{ item.titulo }}</h1>
-          <div class="cat-chip">{{ item.categoria }}</div>
+          <h2 class="title">{{ item.titulo }}</h2>
+          <span class="cat-pill">Categoría: {{ item.categoria }}</span>
 
           <div class="desc-box">
-            <span class="box-lbl">DESCRIPCIÓN DE LA INCIDENCIA</span>
+            <label class="desc-label">DESCRIPCIÓN DETALLADA</label>
             <p class="desc-text">{{ item.descripcion }}</p>
           </div>
         </div>
 
-        <!-- PERSONNEL & TIMESTAMPS -->
-        <div class="meta-grid">
-          <div class="meta-card glass-card">
-            <div class="meta-icon-box blue-box">
-              <ion-icon name="person"></ion-icon>
+        <!-- INFO & PERSONNEL CARD -->
+        <div class="white-card info-card">
+          <div class="info-row">
+            <div class="info-col">
+              <span class="info-label">Solicitante:</span>
+              <span class="info-val">{{ item.solicitante }}</span>
             </div>
-            <div class="meta-details">
-              <span class="meta-title">Solicitante</span>
-              <span class="meta-value">{{ item.solicitante }}</span>
-            </div>
-          </div>
-
-          <div class="meta-card glass-card">
-            <div class="meta-icon-box indigo-box">
-              <ion-icon name="build"></ion-icon>
-            </div>
-            <div class="meta-details">
-              <span class="meta-title">Técnico Asignado</span>
-              <span class="meta-value">{{ item.tecnicoAsignado || 'Sin Asignar (Pendiente)' }}</span>
+            <div class="info-col">
+              <span class="info-label">Técnico Asignado:</span>
+              <span class="info-val">{{ item.tecnicoAsignado || 'Sin asignar' }}</span>
             </div>
           </div>
-        </div>
-
-        <div class="dates-card glass-card">
-          <div class="date-row">
-            <span class="date-lbl"><ion-icon name="calendar"></ion-icon> Reportado el:</span>
-            <span class="date-val">{{ formatFullDate(item.fechaCreacion) }}</span>
-          </div>
-          <div class="date-row">
-            <span class="date-lbl"><ion-icon name="time"></ion-icon> Última actualización:</span>
-            <span class="date-val">{{ formatFullDate(item.fechaActualizacion) }}</span>
-          </div>
-        </div>
-
-        <!-- QUICK STATUS CHANGE PANEL -->
-        <div class="action-panel glass-card">
-          <h3 class="panel-title">Cambiar Estado Rápidamente</h3>
-          <p class="panel-desc">Selecciona el nuevo estado del ticket para guardar de inmediato en SQLite:</p>
           
-          <div class="status-buttons-grid">
+          <hr class="divider" />
+
+          <div class="info-row">
+            <div class="info-col">
+              <span class="info-label">Fecha de creación:</span>
+              <span class="info-val">{{ formatFullDate(item.fechaCreacion) }}</span>
+            </div>
+            <div class="info-col">
+              <span class="info-label">Última actualización:</span>
+              <span class="info-val">{{ formatFullDate(item.fechaActualizacion) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STATUS CHANGE PANEL -->
+        <div class="white-card status-card">
+          <h3 class="status-title">Cambiar Estado de la Incidencia</h3>
+          <p class="status-subtitle">Selecciona un nuevo estado para actualizar SQLite en tiempo real:</p>
+
+          <div class="status-buttons">
             <button 
               type="button"
               *ngFor="let st of statuses"
               class="status-btn"
-              [class.active-btn]="item.estado === st"
+              [class.active-status]="item.estado === st"
               (click)="changeStatus(st)">
-              <ion-icon [name]="getStatusIcon(st)"></ion-icon>
-              <span>{{ st }}</span>
+              {{ st }}
             </button>
           </div>
         </div>
 
         <!-- DELETE BUTTON -->
-        <div class="delete-section">
-          <ion-button color="danger" fill="outline" expand="block" (click)="confirmDelete()" class="btn-delete">
-            <ion-icon slot="start" name="trash"></ion-icon>
-            Eliminar Registro de SQLite
-          </ion-button>
-        </div>
+        <button type="button" class="btn-delete-full" (click)="confirmDelete()">
+          Eliminar esta incidencia permanentemente
+        </button>
       </div>
     </ion-content>
   `,
   styles: [`
-    .main-content {
-      --background: #0b1120;
+    .navbar-toolbar {
+      --background: #2c3e50;
+      color: white;
     }
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 16px;
+      width: 100%;
+      height: 64px;
+    }
+    .navbar-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: white;
+      margin: 0;
+    }
+
     .detail-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      padding-bottom: 40px;
-      max-width: 768px;
-      margin: 0 auto;
+      gap: 20px;
     }
-    .hero-card {
-      padding: 20px;
+
+    .detail-main-card {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
-    .hero-top {
+    .top-meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
     }
-    .large-pill {
+    .code-badge {
+      background: #eef1f5;
+      color: #2c3e50;
+      font-weight: 700;
       font-size: 0.85rem;
       padding: 4px 10px;
+      border-radius: 6px;
     }
-    .hero-badges {
-      display: flex;
-      gap: 8px;
-    }
-    .item-title {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: #f8fafc;
+    .title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2c3e50;
       margin: 4px 0 0;
-      line-height: 1.3;
     }
-    .cat-chip {
+    .cat-pill {
       display: inline-block;
       align-self: flex-start;
-      background: rgba(255, 255, 255, 0.07);
-      color: #cbd5e1;
+      background: #e3e8ef;
+      color: #4a5568;
+      font-size: 0.8rem;
+      font-weight: 600;
       padding: 3px 10px;
       border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
     }
     .desc-box {
-      margin-top: 8px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 10px;
+      padding-top: 16px;
+      border-top: 1px solid #eef1f5;
     }
-    .box-lbl {
-      font-size: 0.7rem;
+    .desc-label {
+      font-size: 0.75rem;
       font-weight: 700;
-      color: #64748b;
-      letter-spacing: 0.8px;
+      color: #718096;
+      letter-spacing: 0.5px;
     }
     .desc-text {
-      font-size: 0.95rem;
-      color: #e2e8f0;
+      font-size: 1rem;
+      color: #2d3748;
       line-height: 1.6;
-      margin: 6px 0 0;
+      margin: 8px 0 0;
     }
 
-    .meta-grid {
+    .info-row {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
-    @media (min-width: 600px) {
-      .meta-grid { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 600px) {
+      .info-row { grid-template-columns: 1fr; }
     }
-    .meta-card {
-      padding: 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .meta-icon-box {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-    .blue-box { background: rgba(14, 165, 233, 0.2); color: #38bdf8; }
-    .indigo-box { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
-
-    .meta-details {
+    .info-col {
       display: flex;
       flex-direction: column;
+      gap: 4px;
     }
-    .meta-title { font-size: 0.72rem; color: #94a3b8; font-weight: 600; }
-    .meta-value { font-size: 0.95rem; color: #f8fafc; font-weight: 700; }
+    .info-label { font-size: 0.8rem; color: #718096; font-weight: 600; }
+    .info-val { font-size: 0.95rem; color: #2c3e50; font-weight: 700; }
+    .divider {
+      border: 0;
+      border-top: 1px solid #eef1f5;
+      margin: 14px 0;
+    }
 
-    .dates-card {
-      padding: 14px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .date-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.82rem;
-    }
-    .date-lbl { color: #94a3b8; display: flex; align-items: center; gap: 6px; }
-    .date-val { color: #cbd5e1; font-weight: 600; }
-
-    .action-panel {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .panel-title { font-size: 1.05rem; font-weight: 700; color: #f8fafc; margin: 0; }
-    .panel-desc { font-size: 0.8rem; color: #94a3b8; margin: 0 0 8px; }
-    .status-buttons-grid {
+    .status-title { font-size: 1.15rem; font-weight: 700; color: #2c3e50; margin: 0 0 6px; }
+    .status-subtitle { font-size: 0.85rem; color: #718096; margin: 0 0 16px; }
+    .status-buttons {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
     }
-    .status-btn {
-      background: rgba(30, 41, 59, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #cbd5e1;
-      padding: 12px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-weight: 600;
-      font-size: 0.82rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    @media (max-width: 650px) {
+      .status-buttons { grid-template-columns: repeat(2, 1fr); }
     }
-    .status-btn:active { transform: scale(0.97); }
-    .status-btn.active-btn {
-      background: #0ea5e9;
-      color: #ffffff;
-      border-color: #38bdf8;
-      box-shadow: 0 4px 15px -3px rgba(14, 165, 233, 0.5);
+    .status-btn {
+      padding: 10px;
+      border: 1px solid #cbd5e0;
+      background: #ffffff;
+      color: #4a5568;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .status-btn:hover { border-color: #3498db; color: #3498db; }
+    .status-btn.active-status {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
     }
 
-    .delete-section { margin-top: 10px; }
-    .btn-delete { --border-radius: 12px; font-weight: 600; height: 46px; }
+    .btn-delete-full {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e74c3c;
+      background: transparent;
+      color: #e74c3c;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-delete-full:hover {
+      background: #e74c3c;
+      color: white;
+    }
   `],
   imports: [
     CommonModule, 
     IonHeader, 
     IonToolbar, 
-    IonTitle, 
+    IonContent, 
     IonButtons, 
     IonButton, 
-    IonIcon, 
-    IonContent
+    IonIcon
   ]
 })
 export class IncidentDetailPage implements OnInit {
@@ -368,44 +342,22 @@ export class IncidentDetailPage implements OnInit {
     await alert.present();
   }
 
-  getPriorityBg(pri: string): string {
+  getBorderClass(pri: string): string {
     switch(pri) {
-      case 'Crítica': return 'rgba(239, 68, 68, 0.2)';
-      case 'Alta': return 'rgba(245, 158, 11, 0.2)';
-      case 'Media': return 'rgba(14, 165, 233, 0.2)';
-      default: return 'rgba(16, 185, 129, 0.2)';
+      case 'Crítica':
+      case 'Alta': return 'border-alta';
+      case 'Media': return 'border-media';
+      default: return 'border-baja';
     }
   }
 
-  getPriorityTextColor(pri: string): string {
+  getBgClass(pri: string): string {
     switch(pri) {
-      case 'Crítica': return '#f87171';
-      case 'Alta': return '#fbbf24';
-      case 'Media': return '#38bdf8';
-      default: return '#34d399';
+      case 'Crítica':
+      case 'Alta': return 'bg-alta';
+      case 'Media': return 'bg-media';
+      default: return 'bg-baja';
     }
-  }
-
-  getStatusBg(st: string): string {
-    switch(st) {
-      case 'Abierta': return 'rgba(20, 184, 166, 0.2)';
-      case 'En Proceso': return 'rgba(245, 158, 11, 0.2)';
-      case 'Resuelta': return 'rgba(16, 185, 129, 0.2)';
-      default: return 'rgba(100, 116, 139, 0.2)';
-    }
-  }
-
-  getStatusTextColor(st: string): string {
-    switch(st) {
-      case 'Abierta': return '#2dd4bf';
-      case 'En Proceso': return '#fbbf24';
-      case 'Resuelta': return '#34d399';
-      default: return '#94a3b8';
-    }
-  }
-
-  getStatusIcon(st: string): string {
-    return (STATUS_CONFIG as any)[st]?.icon || 'time';
   }
 
   formatFullDate(dateStr: string): string {
