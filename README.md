@@ -10,7 +10,7 @@ Aplicación móvil moderna diseñada con una **estética WOW Premium** (Dark/Lig
 
 ---
 
-## 🚀 Características Principales y Arquitectura
+## Características Principales y Arquitectura
 El proyecto sigue rigurosamente los principios de **Arquitectura por Capas**:
 
 1. **Capa de Base de Datos / Infraestructura (`src/app/database/`)**
@@ -31,13 +31,13 @@ El proyecto sigue rigurosamente los principios de **Arquitectura por Capas**:
 
 ---
 
-## 📂 Archivos Entregables Destacados (Rúbrica)
+## Archivos Entregables Destacados (Rúbrica)
 - [`SCRIPT_SQL_Y_SEMILLA.sql`](./SCRIPT_SQL_Y_SEMILLA.sql): Script DDL + DML independiente con la creación exacta de la tabla e inserción de las 6 incidencias iniciales.
 - [`BITACORA_TECNICA.md`](./BITACORA_TECNICA.md): Bitácora técnica corta con las incidencias resueltas durante el desarrollo (compatibilidad Web/Android, inyectores estables Angular y reinicio de semilla).
 
 ---
 
-## 💻 Instrucciones de Instalación y Ejecución
+## Instrucciones de Instalación y Ejecución
 
 ### 1. Requisitos Previos
 - **Node.js** v20 o superior (Verificado con v22.17.0).
@@ -58,7 +58,7 @@ Para probar el 100% de la funcionalidad (tablas, datos semilla, búsqueda y CRUD
 ```bash
 ionic serve
 ```
-> El servicio detectará la plataforma `web` y montará automáticamente el almacén virtual con `jeep-sqlite`. Puedes pulsar el botón de cabecera **"📊 SQLite OK"** y elegir **"🔄 Restaurar Datos Semilla"** para devolver la BD a su estado de fábrica en cualquier momento.
+> El servicio detectará la plataforma `web` y montará automáticamente el almacén virtual con `jeep-sqlite`. Puedes pulsar el botón de cabecera **"SQLite OK"** y elegir **"Restaurar Datos Semilla"** para devolver la BD a su estado de fábrica en cualquier momento.
 
 ### 4. Compilación y Despliegue Nativo en Android (Capacitor)
 Para ejecutar o generar el APK nativo con SQLite nativo de Android:
@@ -76,6 +76,3 @@ ionic capacitor run android
 ```
 
 ---
-
-## 📜 Licencia y Autoría
-Desarrollado para la **Actividad 11 de Aplicaciones Móviles**. Repositorio configurado y subido a [GitHub HelpDesk-Ionic](https://github.com/MrBlair30/HelpDesk-Ionic.git).
