@@ -29,7 +29,9 @@ import {
   statsChart,
   pulse,
   shieldCheckmark,
-  helpCircle
+  helpCircle,
+  sync,
+  folderOpenOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -68,7 +70,9 @@ export class AppComponent implements OnInit {
       statsChart,
       pulse,
       shieldCheckmark,
-      helpCircle
+      helpCircle,
+      sync,
+      folderOpenOutline
     });
   }
 

@@ -18,6 +18,10 @@ import { Incident, INCIDENT_CATEGORIES, INCIDENT_PRIORITIES, IncidentPriority, I
         <div class="header-content">
           <h1 class="navbar-title">Mesa de Ayuda - Incidencias Tecnológicas</h1>
           <ion-buttons slot="end">
+            <ion-button (click)="syncData()" class="sync-btn" [disabled]="incidentService.isSyncing()" title="Sincronizar Manualmente">
+              <ion-icon slot="start" name="sync" [class.spin]="incidentService.isSyncing()"></ion-icon>
+              <span>{{ incidentService.isSyncing() ? 'Sincronizando...' : 'Sincronizar' }}</span>
+            </ion-button>
             <ion-button (click)="openDbOptions()" class="db-status-btn" title="Opciones SQLite">
               <ion-icon slot="start" name="server" [color]="sqlite.isReady() ? 'success' : 'warning'"></ion-icon>
               <span>{{ sqlite.isReady() ? 'SQLite OK' : 'Conectando...' }}</span>
@@ -114,6 +118,10 @@ import { Incident, INCIDENT_CATEGORIES, INCIDENT_PRIORITIES, IncidentPriority, I
               <p class="status-text">
                 <strong>Estado:</strong> {{ item.estado }}
               </p>
+              
+              <p class="status-text" [ngClass]="{'pending-text': item.syncStatus !== 'Sincronizado'}">
+                <strong>Sincronizacion:</strong> {{ item.syncStatus }}
+              </p>
 
               <p class="date-text">{{ formatSimpleDate(item.fechaCreacion) }}</p>
 
@@ -164,6 +172,19 @@ import { Incident, INCIDENT_CATEGORIES, INCIDENT_PRIORITIES, IncidentPriority, I
       font-size: 0.8rem;
       --background: rgba(255, 255, 255, 0.1);
       --border-radius: 6px;
+      margin-left: 10px;
+    }
+    .sync-btn {
+      --color: #ffffff;
+      font-size: 0.8rem;
+      --background: #3498db;
+      --border-radius: 6px;
+    }
+    .spin {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
     }
 
     .page-container {
@@ -258,6 +279,10 @@ import { Incident, INCIDENT_CATEGORIES, INCIDENT_PRIORITIES, IncidentPriority, I
       color: #718096;
       margin: 0 0 10px;
     }
+    .pending-text {
+      color: #e67e22;
+      font-weight: 600;
+    }
 
     .empty-card {
       text-align: center;
@@ -341,13 +366,17 @@ export class IncidentListPage implements OnInit {
     this.router.navigate(['/incidents', item.id]);
   }
 
+  async syncData() {
+    await this.incidentService.syncAllPending();
+  }
+
   async openDbOptions() {
     const actionSheet = await this.actionSheetCtrl.create({
       header: 'Persistencia Local SQLite • Opciones',
       subHeader: `Estado: ${this.sqlite.dbStatusMessage()} (${this.sqlite.platform()})`,
       buttons: [
         {
-          text: '📊 Ver Estadísticas de Base de Datos',
+          text: 'Ver Estadisticas de Base de Datos',
           handler: async () => {
             const stats = await this.sqlite.getTableStats();
             const alert = await this.alertCtrl.create({
@@ -359,9 +388,20 @@ export class IncidentListPage implements OnInit {
           }
         },
         {
-          text: '🔄 Restaurar Datos Semilla de Ejemplo',
+          text: 'Restaurar Datos Semilla de Ejemplo',
           handler: async () => {
-            await this.incidentService.resetSeedData();
+            // Se puede implementar en LocalRepository o incidentService.
+            // Para mantener compatibilidad con el UI:
+            if(typeof (this.incidentService as any)['resetSeedData'] === 'function') {
+              await (this.incidentService as any).resetSeedData();
+            } else {
+               const alert = await this.alertCtrl.create({
+                  header: 'Aviso',
+                  message: 'La funcion de reiniciar semilla ya no está disponible con la nueva arquitectura remota.',
+                  buttons: ['OK']
+               });
+               await alert.present();
+            }
           }
         },
         {

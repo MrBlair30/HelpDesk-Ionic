@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS incidencias (
   solicitante TEXT NOT NULL,
   tecnicoAsignado TEXT,
   fechaCreacion TEXT NOT NULL,
-  fechaActualizacion TEXT NOT NULL
+  fechaActualizacion TEXT NOT NULL,
+  syncStatus TEXT DEFAULT 'Sincronizado'
 );
 
 CREATE INDEX IF NOT EXISTS idx_incidencias_estado ON incidencias (estado);

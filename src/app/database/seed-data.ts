@@ -11,7 +11,8 @@ export const SEED_INCIDENTS: Incident[] = [
     solicitante: 'Marcela Gómez (Contabilidad)',
     tecnicoAsignado: 'Ing. Carlos Ramos',
     fechaCreacion: '2026-07-10T08:30:00.000Z',
-    fechaActualizacion: '2026-07-11T10:15:00.000Z'
+    fechaActualizacion: '2026-07-11T10:15:00.000Z',
+    syncStatus: 'Sincronizado'
   },
   {
     codigo: 'INC-1002',
@@ -23,7 +24,8 @@ export const SEED_INCIDENTS: Incident[] = [
     solicitante: 'Roberto Fernández (RRHH)',
     tecnicoAsignado: null,
     fechaCreacion: '2026-07-11T09:12:00.000Z',
-    fechaActualizacion: '2026-07-11T09:12:00.000Z'
+    fechaActualizacion: '2026-07-11T09:12:00.000Z',
+    syncStatus: 'Sincronizado'
   },
   {
     codigo: 'INC-1003',
@@ -35,7 +37,8 @@ export const SEED_INCIDENTS: Incident[] = [
     solicitante: 'Elena Torres (Finanzas)',
     tecnicoAsignado: 'Lic. Ana Martínez',
     fechaCreacion: '2026-07-11T11:45:00.000Z',
-    fechaActualizacion: '2026-07-11T14:20:00.000Z'
+    fechaActualizacion: '2026-07-11T14:20:00.000Z',
+    syncStatus: 'Sincronizado'
   },
   {
     codigo: 'INC-1004',
@@ -47,7 +50,8 @@ export const SEED_INCIDENTS: Incident[] = [
     solicitante: 'Diego Navarro (Ventas)',
     tecnicoAsignado: 'Ing. Carlos Ramos',
     fechaCreacion: '2026-07-09T14:00:00.000Z',
-    fechaActualizacion: '2026-07-10T16:30:00.000Z'
+    fechaActualizacion: '2026-07-10T16:30:00.000Z',
+    syncStatus: 'Sincronizado'
   },
   {
     codigo: 'INC-1005',
@@ -59,7 +63,8 @@ export const SEED_INCIDENTS: Incident[] = [
     solicitante: 'Valeria López (Diseño)',
     tecnicoAsignado: 'Téc. Fernando Ruiz',
     fechaCreacion: '2026-07-11T16:10:00.000Z',
-    fechaActualizacion: '2026-07-12T09:00:00.000Z'
+    fechaActualizacion: '2026-07-12T09:00:00.000Z',
+    syncStatus: 'Sincronizado'
   },
   {
     codigo: 'INC-1006',
@@ -71,6 +76,7 @@ export const SEED_INCIDENTS: Incident[] = [
     solicitante: 'Javier Morales (Auditoría Interna)',
     tecnicoAsignado: 'Lic. Ana Martínez',
     fechaCreacion: '2026-07-12T08:05:00.000Z',
-    fechaActualizacion: '2026-07-12T08:05:00.000Z'
+    fechaActualizacion: '2026-07-12T08:05:00.000Z',
+    syncStatus: 'Sincronizado'
   }
 ];

@@ -9,6 +9,8 @@ export type IncidentPriority = 'Baja' | 'Media' | 'Alta' | 'Crítica';
 
 export type IncidentStatus = 'Abierta' | 'En Proceso' | 'Resuelta' | 'Cerrada';
 
+export type SyncStatus = 'Pendiente' | 'Sincronizado' | 'Error' | 'Eliminado';
+
 export interface Incident {
   id?: number;
   codigo: string;
@@ -21,6 +23,7 @@ export interface Incident {
   tecnicoAsignado?: string | null;
   fechaCreacion: string;
   fechaActualizacion: string;
+  syncStatus?: SyncStatus;
 }
 
 export type CreateIncidentDto = Omit<Incident, 'id' | 'codigo' | 'fechaCreacion' | 'fechaActualizacion'> & {

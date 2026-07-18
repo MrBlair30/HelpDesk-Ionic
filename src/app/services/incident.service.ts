@@ -1,15 +1,18 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { SqliteService } from '../database/sqlite.service';
+import { LocalRepository } from '../repositories/local.repository';
+import { RemoteRepository } from '../repositories/remote.repository';
 import { Incident, CreateIncidentDto, UpdateIncidentDto, IncidentCategory, IncidentPriority, IncidentStatus } from '../models/incident.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class IncidentService {
-  private sqlite = inject(SqliteService);
+  private localRepo = inject(LocalRepository);
+  private remoteRepo = inject(RemoteRepository);
 
   readonly incidents = signal<Incident[]>([]);
   readonly isLoading = signal<boolean>(false);
+  readonly isSyncing = signal<boolean>(false);
   readonly searchTerm = signal<string>('');
   readonly selectedCategory = signal<IncidentCategory | 'Todas'>('Todas');
   readonly selectedPriority = signal<IncidentPriority | 'Todas'>('Todas');
@@ -51,12 +54,14 @@ export class IncidentService {
   async findAll(): Promise<Incident[]> {
     this.isLoading.set(true);
     try {
-      if (!this.sqlite.isReady()) {
-        await this.sqlite.initializeDatabase();
-      }
-      const rows = await this.sqlite.query('SELECT * FROM incidencias ORDER BY id DESC');
-      this.incidents.set(rows as Incident[]);
-      return rows as Incident[];
+      // 1. Mostrar informacion local primero (Offline-First)
+      const localData = await this.localRepo.findAll();
+      this.incidents.set(localData);
+
+      // 2. Refrescar desde la API en segundo plano
+      this.fetchRemoteAndUpdateLocal();
+      
+      return localData;
     } catch (err) {
       console.error('Error en findAll:', err);
       return [];
@@ -65,61 +70,66 @@ export class IncidentService {
     }
   }
 
-  async findById(id: number): Promise<Incident | null> {
+  private async fetchRemoteAndUpdateLocal(): Promise<void> {
     try {
-      if (!this.sqlite.isReady()) {
-        await this.sqlite.initializeDatabase();
+      const remoteData = await this.remoteRepo.findAll();
+      for (const item of remoteData) {
+        await this.localRepo.save(item);
       }
-      const rows = await this.sqlite.query('SELECT * FROM incidencias WHERE id = ?', [id]);
-      if (rows && rows.length > 0) {
-        return rows[0] as Incident;
-      }
-      return null;
+      const updatedLocalData = await this.localRepo.findAll();
+      this.incidents.set(updatedLocalData);
     } catch (err) {
-      console.error(`Error en findById(${id}):`, err);
-      return null;
+      console.warn('No se pudo obtener informacion del servidor. Trabajando en modo offline.');
     }
+  }
+
+  async findById(id: number): Promise<Incident | null> {
+    // Para simplificar, buscamos en memoria, ya que findAll carga todo
+    const current = this.incidents().find(i => i.id === id);
+    return current || null;
   }
 
   async create(dto: CreateIncidentDto): Promise<Incident | null> {
     this.isLoading.set(true);
     try {
-      if (!this.sqlite.isReady()) {
-        await this.sqlite.initializeDatabase();
-      }
-
-      // Generar código único INC-XXXX
       let codigo = dto.codigo;
       if (!codigo) {
-        const countRes = await this.sqlite.query('SELECT MAX(id) as maxId FROM incidencias');
-        const nextNum = ((countRes[0]?.maxId || 1006) + 1);
-        codigo = `INC-${nextNum}`;
+        const countRes = await this.localRepo.findAll();
+        let maxId = 0;
+        for (const item of countRes) {
+          if (item.codigo && item.codigo.startsWith('INC-')) {
+            const num = parseInt(item.codigo.replace('INC-', ''), 10);
+            if (!isNaN(num) && num > maxId) {
+              maxId = num;
+            }
+          }
+        }
+        codigo = `INC-${(maxId + 1).toString().padStart(3, '0')}`;
       }
 
       const now = new Date().toISOString();
-      const sql = `
-        INSERT INTO incidencias (
-          codigo, titulo, descripcion, categoria, prioridad, estado, solicitante, tecnicoAsignado, fechaCreacion, fechaActualizacion
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-      const params = [
+      const newIncident: Incident = {
         codigo,
-        dto.titulo,
-        dto.descripcion,
-        dto.categoria,
-        dto.prioridad,
-        dto.estado,
-        dto.solicitante,
-        dto.tecnicoAsignado || null,
-        now,
-        now
-      ];
+        titulo: dto.titulo,
+        descripcion: dto.descripcion,
+        categoria: dto.categoria,
+        prioridad: dto.prioridad,
+        estado: dto.estado,
+        solicitante: dto.solicitante,
+        tecnicoAsignado: dto.tecnicoAsignado || null,
+        fechaCreacion: now,
+        fechaActualizacion: now,
+        syncStatus: 'Pendiente'
+      };
 
-      await this.sqlite.run(sql, params);
-      await this.findAll();
+      // Guardar localmente
+      await this.localRepo.save(newIncident);
+      await this.refreshLocalData();
 
-      const newRecord = await this.sqlite.query('SELECT * FROM incidencias WHERE codigo = ?', [codigo]);
-      return newRecord[0] || null;
+      // Intentar guardar en remoto
+      this.syncIncident(newIncident);
+
+      return newIncident;
     } catch (err) {
       console.error('Error en create:', err);
       throw err;
@@ -131,50 +141,26 @@ export class IncidentService {
   async update(id: number, dto: UpdateIncidentDto): Promise<boolean> {
     this.isLoading.set(true);
     try {
-      if (!this.sqlite.isReady()) {
-        await this.sqlite.initializeDatabase();
-      }
-
       const current = await this.findById(id);
-      if (!current) {
-        throw new Error(`Incidencia con ID ${id} no encontrada.`);
-      }
+      if (!current) throw new Error(`Incidencia no encontrada.`);
 
       const updated: Incident = {
         ...current,
         ...dto,
-        fechaActualizacion: new Date().toISOString()
+        fechaActualizacion: new Date().toISOString(),
+        syncStatus: 'Pendiente'
       };
 
-      const sql = `
-        UPDATE incidencias SET
-          titulo = ?,
-          descripcion = ?,
-          categoria = ?,
-          prioridad = ?,
-          estado = ?,
-          solicitante = ?,
-          tecnicoAsignado = ?,
-          fechaActualizacion = ?
-        WHERE id = ?
-      `;
-      const params = [
-        updated.titulo,
-        updated.descripcion,
-        updated.categoria,
-        updated.prioridad,
-        updated.estado,
-        updated.solicitante,
-        updated.tecnicoAsignado || null,
-        updated.fechaActualizacion,
-        id
-      ];
+      // Guardar localmente
+      await this.localRepo.save(updated);
+      await this.refreshLocalData();
 
-      await this.sqlite.run(sql, params);
-      await this.findAll();
+      // Intentar actualizar en remoto
+      this.syncIncident(updated);
+
       return true;
     } catch (err) {
-      console.error(`Error en update(${id}):`, err);
+      console.error(`Error en update:`, err);
       throw err;
     } finally {
       this.isLoading.set(false);
@@ -184,27 +170,72 @@ export class IncidentService {
   async delete(id: number): Promise<boolean> {
     this.isLoading.set(true);
     try {
-      if (!this.sqlite.isReady()) {
-        await this.sqlite.initializeDatabase();
+      const current = await this.findById(id);
+      if (!current) return false;
+
+      // Eliminamos localmente
+      await this.localRepo.deleteByCodigo(current.codigo);
+      await this.refreshLocalData();
+
+      // Eliminamos en el remoto
+      try {
+        await this.remoteRepo.delete(current.codigo);
+      } catch (err) {
+        // En un offline-first mas avanzado, guardariamos una cola de eliminaciones pendientes
+        console.warn('No se pudo eliminar remotamente', err);
       }
-      await this.sqlite.run('DELETE FROM incidencias WHERE id = ?', [id]);
-      await this.findAll();
+
       return true;
     } catch (err) {
-      console.error(`Error en delete(${id}):`, err);
+      console.error(`Error en delete:`, err);
       throw err;
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  async resetSeedData(): Promise<void> {
-    this.isLoading.set(true);
+  private async syncIncident(incident: Incident): Promise<void> {
     try {
-      await this.sqlite.resetAndSeedDatabase();
-      await this.findAll();
-    } finally {
-      this.isLoading.set(false);
+      // Intentamos sincronizar el registro especifico
+      await this.remoteRepo.sync([incident]);
+      // Si fue exitoso, actualizamos estado local
+      incident.syncStatus = 'Sincronizado';
+      await this.localRepo.save(incident);
+      await this.refreshLocalData();
+    } catch (err: any) {
+      console.warn('Sincronizacion remota fallida. El registro queda como Pendiente.', err);
+      // Agregar alert visual para ver el error real en el movil
+      if (err && err.message) {
+        alert('Error de sincronizacion: ' + err.message);
+      } else {
+        alert('Error de sincronizacion: ' + JSON.stringify(err));
+      }
     }
+  }
+
+  async syncAllPending(): Promise<void> {
+    this.isSyncing.set(true);
+    try {
+      const pending = await this.localRepo.findPending();
+      if (pending.length > 0) {
+        const success = await this.remoteRepo.sync(pending);
+        if (success) {
+          for (const item of pending) {
+            item.syncStatus = 'Sincronizado';
+            await this.localRepo.save(item);
+          }
+          await this.refreshLocalData();
+        }
+      }
+    } catch (err) {
+      console.error('Error durante la sincronizacion manual:', err);
+    } finally {
+      this.isSyncing.set(false);
+    }
+  }
+
+  private async refreshLocalData(): Promise<void> {
+    const data = await this.localRepo.findAll();
+    this.incidents.set(data);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject, NgZone } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { INCIDENCIAS_SCHEMA_SQL } from './schema.sql';
@@ -12,6 +12,7 @@ export class SqliteService {
   private sqlite: SQLiteConnection;
   private db!: SQLiteDBConnection;
   private dbName = 'helpdesk_db';
+  private ngZone = inject(NgZone);
 
   readonly isReady = signal<boolean>(false);
   readonly dbStatusMessage = signal<string>('Inicializando SQLite...');
@@ -61,15 +62,17 @@ export class SqliteService {
 
   private async initWebSqlite(): Promise<void> {
     try {
-      const jeepEl = document.querySelector('jeep-sqlite');
-      if (!jeepEl) {
-        const { JeepSqlite } = await import('jeep-sqlite/dist/components/jeep-sqlite');
-        customElements.define('jeep-sqlite', JeepSqlite);
-        const jeepSqlite = document.createElement('jeep-sqlite');
-        document.body.appendChild(jeepSqlite);
-        await customElements.whenDefined('jeep-sqlite');
-      }
-      await this.sqlite.initWebStore();
+      await this.ngZone.runOutsideAngular(async () => {
+        const jeepEl = document.querySelector('jeep-sqlite');
+        if (!jeepEl) {
+          const { defineCustomElements } = await import('jeep-sqlite/loader');
+          defineCustomElements(window);
+          const jeepSqlite = document.createElement('jeep-sqlite');
+          document.body.appendChild(jeepSqlite);
+          await customElements.whenDefined('jeep-sqlite');
+        }
+        await this.sqlite.initWebStore();
+      });
     } catch (err) {
       console.error('Error en initWebSqlite:', err);
       throw err;
